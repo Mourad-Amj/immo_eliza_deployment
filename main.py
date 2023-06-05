@@ -1,5 +1,5 @@
-from typing import Union, Optional
-from fastapi import FastAPI, HTTPException
+from typing import Union
+from fastapi import FastAPI
 from pydantic import BaseModel, ValidationError
 
 app = FastAPI()
