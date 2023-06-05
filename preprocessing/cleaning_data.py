@@ -107,16 +107,20 @@ def knn_imputer(df, exclude_cols):
     df[other_cols] = impute_knn.fit_transform(df[other_cols]).astype(float)
     return df
 
+
+
 def main():
+    kitchen_mapping = {'Not installed': 0, 'Installed': 1, 'Semi equipped': 2, 'Hyper equipped': 3, 'USA uninstalled': 0,
+                       'USA installed': 1, 'USA semi equipped': 2, 'USA hyper equipped': 3}
+    building_cond_mapping = {'To restore': 0, 'To be done up': 2, 'Just renovated': 3, 'To renovate': 1, 'Good': 3, 'As new': 4}
+    exclude_cols = ["Price","Type of property","Subtype of property","Locality","Surroundings type","Energy class","Heating type","Province"]
     # Apartment code
     apt_df = load_and_preprocess_data("raw_data.csv", "apartment")
     common_cols = ['Living area', 'Terrace surface', 'Garden surface', 'Primary energy consumption']
     apt_df = convert_and_clean(apt_df, common_cols)
     apt_df = handle_garden_terrace(apt_df)
     apt_df = nan_replacement(apt_df, ['Furnished', 'Swimming pool', 'Open fire'])
-    kitchen_mapping = {'Not installed': 0, 'Installed': 1, 'Semi equipped': 2, 'Hyper equipped': 3, 'USA uninstalled': 0,
-                       'USA installed': 1, 'USA semi equipped': 2, 'USA hyper equipped': 3}
-    building_cond_mapping = {'To restore': 0, 'To be done up': 2, 'Just renovated': 3, 'To renovate': 1, 'Good': 3, 'As new': 4}
+    house_df = knn_imputer(house_df, exclude_cols)
     apt_df = handle_categorical_columns(apt_df, kitchen_mapping, building_cond_mapping)
     apt_df = handle_parking(apt_df)
     apt_df = apt_df.drop(apt_df[apt_df["Living area"].isna()].index)
@@ -141,9 +145,8 @@ def main():
     house_df = convert_and_clean(house_df, common_cols)
     house_df = handle_garden_terrace(house_df)
     house_df = nan_replacement(house_df, ['Furnished', 'Swimming pool', 'Open fire'])
-    kitchen_mapping = {'Not installed': 0, 'Installed': 1, 'Semi equipped': 2, 'Hyper equipped': 3, 'USA uninstalled': 0,
-                       'USA installed': 1, 'USA semi equipped': 2, 'USA hyper equipped': 3}
-    building_cond_mapping = {'To restore': 0, 'To be done up': 2, 'Just renovated': 3, 'To renovate': 1, 'Good': 3, 'As new': 4}
+
+    apartment_df = knn_imputer(apartment_df, exclude_cols)
     house_df = handle_categorical_columns(house_df, kitchen_mapping, building_cond_mapping)
     house_df = handle_parking(house_df)
     house_df = house_df.drop(house_df[house_df["Living area"].isna()].index)

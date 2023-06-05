@@ -29,7 +29,7 @@ def read_root():
 @app.get("/predict")
 def explain_predict():
     return"""
-    Use to this endpoint with the following data in JSON:
+    Use this endpoint with the following data in JSON:
     
     - area: int *
     - property_type: str *

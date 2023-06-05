@@ -175,8 +175,6 @@ def get_province(zip_code):
         
 df['Province'] = df['Zip'].apply(get_province)
 
-
-
 df = df.astype({"Price":"float",
                 "Number of rooms":"float",
                 "Living area":"float",
@@ -185,8 +183,6 @@ df = df.astype({"Price":"float",
                 "Surface of the land":"float",
                 "Number of facades":"float",
                 "Primary energy consumption":"float"})
-
-
 
 housedf = df.copy()
 
