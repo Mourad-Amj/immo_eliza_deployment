@@ -11,8 +11,12 @@ class Model:
 
     def train_model(self):
         df = pd.read_csv(self.datafile)
-        features = list(df.drop(columns=['Zip', 'Price', 'id', 'Primary energy consumption',
+        print(df.columns)
+        features = list(df.drop(columns=['Unnamed: 0','Zip', 'Price' , 'Locality','id', 'Primary energy consumption','Type of property',
                                          'Subtype of property', 'Energy class', 'Province']).columns)
+        
+
+        
         X = df[features]
         y = df['Price']
 
