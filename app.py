@@ -55,7 +55,7 @@ def explain_predict():
 
 @app.post("/predict")
 def predict_property_price(property: Property):
-    prediction = predict_price(property)
+    prediction = predict_price(property.property_type, property.dict())
     if prediction is not None:
         return {"prediction": prediction}
     else:

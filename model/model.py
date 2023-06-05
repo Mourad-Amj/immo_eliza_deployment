@@ -30,9 +30,9 @@ class Model:
 
 def load_model(property_type: str):
     if property_type == "APARTMENT":
-        datafile = "Data/final_apartment.csv"
+        datafile = "./Data/final_apartment.csv"
     elif property_type == "HOUSE":
-        datafile = "Data/final_house.csv"
+        datafile = "./Data/final_house.csv"
     else:
         raise ValueError("It should be either 'APARTMENT' or 'HOUSE'.")
     
