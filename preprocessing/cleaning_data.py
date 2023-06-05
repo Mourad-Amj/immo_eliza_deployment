@@ -12,6 +12,7 @@ def load_and_preprocess_data(file_path, property_type):
     df = df[df["Type"]==property_type]
 
     return df
+
 def select_and_rename_columns(df):
     df = df[['id','Price','Zip','Type','Subtype','location',
        'Surroundings type',
@@ -139,17 +140,16 @@ def knn_imputer(df, exclude_cols):
     return df
 
 
-
 def main():
     kitchen_mapping = {'Not installed': 0, 'Installed': 1, 'Semi equipped': 2, 'Hyper equipped': 3, 'USA uninstalled': 0,
                        'USA installed': 1, 'USA semi equipped': 2, 'USA hyper equipped': 3}
     building_cond_mapping = {'To restore': 0, 'To be done up': 2, 'Just renovated': 3, 'To renovate': 1, 'Good': 3, 'As new': 4}
     exclude_cols = ["Price","Type of property","Subtype of property","Locality","Surroundings type","Energy class","Heating type","Province"]
     # Apartment code
+    common_cols = ['Living area', 'Terrace surface', 'Garden surface', 'Primary energy consumption']
     apt_df = load_and_preprocess_data("./Data/raw_data.csv", "apartment")
     apt_df = select_and_rename_columns(apt_df)
     apt_df = apt_df.drop(columns=['Surface of the land'])
-    common_cols = ['Living area', 'Terrace surface', 'Garden surface', 'Primary energy consumption']
     apt_df = convert_and_clean(apt_df, common_cols)
     apt_df = handle_garden_terrace(apt_df)
     apt_df = handle_categorical_columns(apt_df, kitchen_mapping, building_cond_mapping)
@@ -157,17 +157,15 @@ def main():
     apt_df = nan_replacement(apt_df, ['Furnished', 'Swimming pool', 'Open fire'])
     apt_df = knn_imputer(apt_df, exclude_cols)
     apt_df = apt_df.drop(apt_df[apt_df["Living area"].isna()].index)
-
     apt_df['Locality'] = apt_df['Locality'].apply(urllib.parse.unquote)
     apt_df['Province'] = apt_df['Zip'].apply(get_province)
-
     apt_df = apt_df.astype({"Price": "float", "Number of rooms": "float", "Living area": "float",
                             "Terrace surface": "float", "Garden surface": "float",
                             "Number of facades": "float", "Primary energy consumption": "float"})
-
     aptdf = apt_df.copy()
     aptdf = remove_outliers(aptdf, ['Price'], 4)
     apt_df = remove_outliers(aptdf, ['Living area'], 3)
+
     apt_df.to_csv("./Data/final_apartment.csv")
 
 
@@ -175,25 +173,19 @@ def main():
     common_cols = ['Living area', 'Surface of the land', 'Terrace surface', 'Garden surface', 'Primary energy consumption']
     house_df = load_and_preprocess_data("./Data/raw_data.csv", "house")
     house_df = select_and_rename_columns(house_df)
-    house_df = convert_and_clean(house_df, common_cols)
-    print(house_df.columns)
-    
+    house_df = convert_and_clean(house_df, common_cols)  
     house_df = handle_garden_terrace(house_df)
     house_df = handle_categorical_columns(house_df, kitchen_mapping, building_cond_mapping)
-
     house_df = nan_replacement(house_df, ['Furnished', 'Swimming pool', 'Open fire'])
     house_df = handle_parking(house_df)
     house_df = knn_imputer(house_df, exclude_cols)
     house_df = house_df.drop(house_df[house_df["Living area"].isna()].index)
     house_df = house_df.drop(house_df[house_df["Surface of the land"].isna()].index)
-
     house_df['Locality'] = house_df['Locality'].apply(urllib.parse.unquote)
     house_df['Province'] = house_df['Zip'].apply(get_province)
-
     house_df = house_df.astype({"Price": "float", "Number of rooms": "float", "Living area": "float",
                                 "Surface of the land": "float", "Terrace surface": "float", "Garden surface": "float",
                                 "Number of facades": "float", "Primary energy consumption": "float"})
-
     housedf = house_df.copy()
     housedf = remove_outliers(housedf, ['Price'], 4)
     house_df = remove_outliers(housedf, ['Living area', 'Surface of the land'], 3)

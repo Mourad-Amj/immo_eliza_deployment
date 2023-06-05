@@ -1,26 +1,28 @@
-from typing import Optional
+from typing import Optional, Literal
 from fastapi import FastAPI
 from pydantic import BaseModel
+from predict.prediction import predict_price
 
 app = FastAPI()
 
 class Property(BaseModel):
     area: int
-    property_type: str
+    property_type: Literal["APARTMENT", "HOUSE"]
     rooms_number: int
     zip_code: int
-    land_area: Optional[int] = None
-    garden: Optional[bool] = None
-    garden_area: Optional[int] = None
-    equipped_kitchen: Optional[bool] = None
-    full_address: Optional[str] = None
-    swimming_pool: Optional[bool] = None
-    furnished: Optional[bool] = None
-    open_fire: Optional[bool] = None
-    terrace: Optional[bool] = None
-    terrace_area: Optional[int] = None
-    facades_number: Optional[int] = None
-    building_state: Optional[str] = None
+    land_area: Optional[int]
+    garden: Optional[bool]
+    garden_area: Optional[int]
+    equipped_kitchen: Optional[Literal['Not installed', 'Installed', 'Semi equipped', 'Hyper equipped', 'USA uninstalled',
+                                        'USA installed', 'USA semi equipped', 'USA hyper equipped']]
+    full_address: Optional[str]
+    swimming_pool: Optional[bool]
+    furnished: Optional[bool]
+    open_fire: Optional[bool]
+    terrace: Optional[bool]
+    terrace_area: Optional[int]
+    facades_number: Optional[int]
+    building_state: Optional[Literal['To restore', 'To be done up', 'Just renovated', 'To renovate', 'Good', 'As new']]
 
 @app.get("/")
 def read_root():
@@ -28,7 +30,7 @@ def read_root():
 
 @app.get("/predict")
 def explain_predict():
-    return"""
+    return """
     Use this endpoint with the following data in JSON:
     
     - area: int *
@@ -38,7 +40,7 @@ def explain_predict():
     - land_area: int 
     - garden: bool 
     - garden_area: int 
-    - equipped_kitchen: bool 
+    - equipped_kitchen: str 
     - full_address: str 
     - swimming_pool: bool 
     - furnished: bool 
@@ -53,11 +55,8 @@ def explain_predict():
 
 @app.post("/predict")
 def predict_property_price(property: Property):
-
-    prediction = None 
-
+    prediction = predict_price(property)
     if prediction is not None:
         return {"prediction": prediction}
     else:
         return {"error": "Could not make a prediction, please try again."}
-
