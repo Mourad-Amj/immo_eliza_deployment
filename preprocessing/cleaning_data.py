@@ -139,6 +139,13 @@ def knn_imputer(df, exclude_cols):
     df[other_cols] = impute_knn.fit_transform(df[other_cols]).astype(float)
     return df
 
+def drop_surplus(df):
+    df.drop('Unnamed: 0', inplace=True, axis=1)
+    df.drop('Surroundings type', inplace=True, axis=1)
+    df.drop('Type of property', inplace=True, axis=1)
+    df.drop('Heating type', inplace=True, axis=1)
+    df.drop('Locality', inplace=True, axis=1)
+    return df
 
 def main():
     kitchen_mapping = {'Not installed': 0, 'Installed': 1, 'Semi equipped': 2, 'Hyper equipped': 3, 'USA uninstalled': 0,
@@ -165,7 +172,7 @@ def main():
     aptdf = apt_df.copy()
     aptdf = remove_outliers(aptdf, ['Price'], 4)
     apt_df = remove_outliers(aptdf, ['Living area'], 3)
-
+    apt_df = drop_surplus(apt_df)
     apt_df.to_csv("./Data/final_apartment.csv")
 
 
@@ -190,8 +197,9 @@ def main():
     housedf = remove_outliers(housedf, ['Price'], 4)
     house_df = remove_outliers(housedf, ['Living area', 'Surface of the land'], 3)
     house_df['Surface of the land'] = one_convert_to_nan(house_df['Surface of the land'])
-
+    house_df = drop_surplus(house_df)
     house_df.to_csv("./Data/final_house.csv")
+
 
 if __name__ == "__main__":
     main()
