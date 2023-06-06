@@ -1,0 +1,42 @@
+import pandas as pd
+from sklearn.feature_selection import SelectKBest, f_regression
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+import joblib    
+
+
+# if property_type == "APARTMENT":
+#     datafile = "./Data/final_apartment.csv"
+# elif property_type == "HOUSE":
+#     datafile = "./Data/final_house.csv"
+# else:
+#     raise ValueError("It should be either 'APARTMENT' or 'HOUSE'.")
+
+
+df = pd.read_csv('./Data/final_house.csv')
+
+print(df.columns)
+features = list(df.drop(columns=['Unnamed: 0','Zip', 'Price' , 'Locality','id', 'Primary energy consumption','Type of property',
+                                         'Subtype of property', 'Energy class']).columns)
+
+province = pd.get_dummies(df[['Province']])
+
+y = df['Price']
+X = pd.concat([df[df[features]],province],axis=1)
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=101) 
+
+# Fitting the model and making predictions
+lm = LinearRegression() 
+lm.fit(X_train, y_train) #training the algorithm
+
+# save the model to disk
+filename = './model/LM_model_house.sav'
+joblib.dump(lm, filename)
+
+
+# load the model from disk
+loaded_model = joblib.load('./model/LM_model_house.sav')
+
+predictions = loaded_model.predict(X_test)
+result = loaded_model.score(X_test, y_test)

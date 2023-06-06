@@ -2,6 +2,7 @@ import pandas as pd
 from sklearn.feature_selection import SelectKBest, f_regression
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
+import pickle
 
 class Model:
     def __init__(self, datafile):
@@ -14,8 +15,6 @@ class Model:
         print(df.columns)
         features = list(df.drop(columns=['Unnamed: 0','Zip', 'Price' , 'Locality','id', 'Primary energy consumption','Type of property',
                                          'Subtype of property', 'Energy class', 'Province']).columns)
-        
-
         
         X = df[features]
         y = df['Price']

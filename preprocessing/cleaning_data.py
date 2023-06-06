@@ -169,10 +169,10 @@ def main():
     apt_df = apt_df.astype({"Price": "float", "Number of rooms": "float", "Living area": "float",
                             "Terrace surface": "float", "Garden surface": "float",
                             "Number of facades": "float", "Primary energy consumption": "float"})
-    aptdf = apt_df.copy()
-    aptdf = remove_outliers(aptdf, ['Price'], 4)
-    apt_df = remove_outliers(aptdf, ['Living area'], 3)
+    apt_df = remove_outliers(apt_df, ['Price'], 4)
+    apt_df = remove_outliers(apt_df, ['Living area'], 3)
     apt_df = drop_surplus(apt_df)
+
     apt_df.to_csv("./Data/final_apartment.csv")
 
 
@@ -193,9 +193,8 @@ def main():
     house_df = house_df.astype({"Price": "float", "Number of rooms": "float", "Living area": "float",
                                 "Surface of the land": "float", "Terrace surface": "float", "Garden surface": "float",
                                 "Number of facades": "float", "Primary energy consumption": "float"})
-    housedf = house_df.copy()
-    housedf = remove_outliers(housedf, ['Price'], 4)
-    house_df = remove_outliers(housedf, ['Living area', 'Surface of the land'], 3)
+    house_df = remove_outliers(house_df, ['Price'], 4)
+    house_df = remove_outliers(house_df, ['Living area', 'Surface of the land'], 3)
     house_df['Surface of the land'] = one_convert_to_nan(house_df['Surface of the land'])
     house_df = drop_surplus(house_df)
     house_df.to_csv("./Data/final_house.csv")
