@@ -2,6 +2,7 @@ from typing import Optional, Literal
 from fastapi import FastAPI
 from pydantic import BaseModel
 from predict.prediction import predict_price
+import joblib    
 
 app = FastAPI()
 
@@ -56,7 +57,18 @@ def explain_predict():
 @app.post("/predict")
 def predict_property_price(property: Property):
     prediction = predict_price(property.property_type, property.dict())
+
     if prediction is not None:
         return {"prediction": prediction}
     else:
         return {"error": "Could not make a prediction, please try again."}
+    
+
+
+
+
+#     # load the model from disk
+# loaded_model = joblib.load('/mnt/c/Users/Moura/git/immo_eliza_deployment/model/LM_model_house.sav')
+
+# predictions = loaded_model.predict(X_test)
+# result = loaded_model.score(X_test, y_test)
