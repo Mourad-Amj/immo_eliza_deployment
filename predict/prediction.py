@@ -51,16 +51,16 @@ def predict() :
       filename = '/mnt/c/Users/Moura/git/immo_eliza_deployment/model/LM_model_apartment.sav'
       joblib.dump(lm, filename)
 
-  # preprocessing df from the json part of the API( app.py)
-  # load the model from disk
+  
+  #property: Property from app.py and convert it in too a df
+  df_input = pd.read_json(property: Property)
 
-  loaded_model = joblib.load(f'/mnt/c/Users/Moura/git/immo_eliza_deployment/model/LM_model_{df_input['type']}.sav')
+  loaded_model = joblib.load(f'/mnt/c/Users/Moura/git/immo_eliza_deployment/model/LM_model_{(df_input['property_type']).lower()}.sav')
 
   prediction = loaded_model.predict(df_input) 
 
-
-
+  #return prediction in json
       
       
 
-return
+return prediction
