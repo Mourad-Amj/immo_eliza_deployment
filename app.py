@@ -1,8 +1,7 @@
 from typing import Optional, Literal
 from fastapi import FastAPI
 from pydantic import BaseModel
-from predict.prediction import predict_price
-import joblib    
+from predict.prediction import predict   
 
 app = FastAPI()
 
@@ -56,7 +55,7 @@ def explain_predict():
 
 @app.post("/predict")
 def predict_property_price(property: Property):
-    prediction = predict_price(property.property_type, property.dict())
+    prediction = predict(property.property_type, property.dict())
 
     if prediction is not None:
         return {"prediction": prediction}

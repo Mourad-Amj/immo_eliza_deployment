@@ -1,66 +1,73 @@
-import pandas as pd
-from sklearn.feature_selection import SelectKBest, f_regression
+import os
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 import joblib   
-import os 
+import pandas as pd
 
-path_to_house_csv = '/mnt/c/Users/Moura/git/immo_eliza_deployment/Data/final_house.csv'
-path_to_apartment_csv = '/mnt/c/Users/Moura/git/immo_eliza_deployment/Data/final_apartment.csv'
+kitchen_mapping = {'Not installed': 0, 'Installed': 1, 'Semi equipped': 2, 'Hyper equipped': 3, 'USA uninstalled': 0,
+                       'USA installed': 1, 'USA semi equipped': 2, 'USA hyper equipped': 3}
+building_cond_mapping = {'To restore': 0, 'To be done up': 2, 'Just renovated': 3, 'To renovate': 1, 'Good': 3, 'As new': 4}
 
-check_file_house = os.path.exists(path_to_house_csv)
-check_file_apartment = os.path.exists(path_to_apartment_csv)
 
-def predict() :
-    if check_file_house :
-      #HOUSE
-      df = pd.read_csv(path_to_house_csv)
-      features = list(df.drop(columns=['Unnamed: 0','Province','Zip', 'Price' , 'Locality','id', 'Primary energy consumption','Type of property','Surroundings type',
-                                              'Heating type','Subtype of property', 'Energy class']).columns)
+path_to_house_csv = './Data/final_house.csv'
+path_to_apartment_csv = './Data/final_apartment.csv'
+model_path_house = './model/LM_model_house.sav'
+model_path_apartment = './model/LM_model_apartment.sav'
 
-      y = df['Price']
-      X = df[features].fillna(0)
 
-      X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=101) 
+def train_and_save_model(path_to_csv, model_path):
+    df = pd.read_csv(path_to_csv)
+    features = list(df.drop(columns=['Unnamed: 0', 'Province', 'Zip', 'Price', 'Locality', 'id', 
+                                     'Primary energy consumption', 'Type of property', 'Surroundings type',
+                                     'Heating type', 'Subtype of property', 'Energy class',
+                                     'Bathrooms','Construction year','Parking']).columns)
+    y = df['Price']
+    X = df[features].fillna(0)
 
-      # Fitting the model and making predictions
-      lm = LinearRegression() 
-      lm.fit(X_train, y_train) #training the algorithm
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=101)
 
-      # save the model to disk
-      filename = '/mnt/c/Users/Moura/git/immo_eliza_deployment/model/LM_model_house.sav'
-      joblib.dump(lm, filename)
+    lm = LinearRegression()
+    lm.fit(X_train, y_train)
 
-    elif check_file_apartment:
-      #Apartement
-      df_aprt = pd.read_csv(path_to_apartment_csv)
-      features = list(df_aprt.drop(columns=['Unnamed: 0','Province','Zip', 'Price' , 'Locality','id', 'Primary energy consumption',
-                                            'Type of property','Surroundings type',
-                                          'Heating type','Subtype of property', 'Energy class']).columns)
+    joblib.dump(lm, model_path)
 
-      y = df_aprt['Price']
-      X = df_aprt[features].fillna(0)
 
-      X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.4, random_state=101) 
+def predict(property_type: str, property: dict):
+    if property_type.upper() == "HOUSE":
+        if not os.path.exists(model_path_house):
+            train_and_save_model(path_to_house_csv, model_path_house)
 
-      # Fitting the model and making predictions
-      lm = LinearRegression() 
-      lm.fit(X_train, y_train) #training the algorithm
+        loaded_model = joblib.load(model_path_house)
 
-      # save the model to disk
-      filename = '/mnt/c/Users/Moura/git/immo_eliza_deployment/model/LM_model_apartment.sav'
-      joblib.dump(lm, filename)
+    elif property_type.upper() == "APARTMENT":
+        if not os.path.exists(model_path_apartment):
+            train_and_save_model(path_to_apartment_csv, model_path_apartment)
 
-  
-  #property: Property from app.py and convert it in too a df
-  df_input = pd.read_json(property: Property)
+        loaded_model = joblib.load(model_path_apartment)
+    
+    df_input = pd.DataFrame({
+    # 'Zip': [property['zip_code']],
+    # 'Type of property': [property['property_type']],
+    'Living area': [property['area']],
+    'Number of rooms': [property['rooms_number']],
+    'Kitchen values': [property.get('equipped_kitchen')],
+    'Number of facades': [property.get('facades_number')],
+    'Swimming pool': [property.get('swimming_pool')],
+    'Furnished': [property.get('furnished')],
+    'Open fire': [property.get('open_fire')],
+    'Terrace': [property.get('terrace')],
+    'Terrace surface': [property.get('terrace_area')],
+    'Garden': [property.get('garden')],
+    'Garden surface': [property.get('garden_area')],
+    'Surface of the land': [property.get('land_area')],
+    'Building Cond. values': [property.get('building_state')]
+}).fillna(0)
+    
+  # Re-order the columns in prediction data to match the order in training data
+    df_input = df_input[loaded_model.feature_names_in_]
+    df_input['Kitchen values'] = df_input['Kitchen values'].map(kitchen_mapping)
+    df_input['Building Cond. values'] = df_input['Building Cond. values'].map(building_cond_mapping)
 
-  loaded_model = joblib.load(f'/mnt/c/Users/Moura/git/immo_eliza_deployment/model/LM_model_{(df_input['property_type']).lower()}.sav')
+    prediction = loaded_model.predict(df_input)
 
-  prediction = loaded_model.predict(df_input) 
-
-  #return prediction in json
-      
-      
-
-return prediction
+    return prediction.tolist()
